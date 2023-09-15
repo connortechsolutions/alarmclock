@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarm Clock</title>
+    <style>
+        body {
+            font-size: 20px;
+        }
+        
+        #current-time {
+            font-size: 36px;
+            text-align: center;
+        }
+        
+        input[type="time"], button {
+            font-size: 24px;
+        }
+        
+        #alarm-indicator {
+            font-size: 30px;
+            text-align: center;
+            margin-top: 20px;
+            display: none; /* Initially hide the message */
+        }
+    </style>
+</head>
+<body>
+    <h1>Alarm Clock</h1>
+    <div id="current-time"></div>
+    <input type="time" id="alarm-time">
+    <button id="set-alarm">Set Alarm</button>
+    <button id="turn-off-alarm" disabled>Turn Off Alarm</button>
+	<br /><br />
+    <div id="alarm-indicator">Alarm is set!</div> <!-- Displayed message -->
+    
+    <script>
+        const alarmSound = new Audio('https://dashboard.connortechsolutions.com/alarm/alarm.mp3');
+        let alarmInterval;
+        let alarmTime;
+        let alarmPlaying = false;
+
+        function updateCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            let amPm = 'AM';
+
+            if (hours > 12) {
+                hours -= 12;
+                amPm = 'PM';
+            }
+
+            hours = hours.toString().padStart(2, '0');
+
+            document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds} ${amPm}`;
+        }
+
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
+
+        document.getElementById('set-alarm').addEventListener('click', () => {
+            const alarmTimeInput = document.getElementById('alarm-time').value;
+            const [hours, minutes] = alarmTimeInput.split(':');
+            const currentTime = new Date();
+            alarmTime = new Date(
+                currentTime.getFullYear(),
+                currentTime.getMonth(),
+                currentTime.getDate(),
+                hours,
+                minutes,
+                0
+            );
+            document.getElementById('alarm-indicator').textContent = 'Alarm is set!'; // Display message
+            document.getElementById('alarm-indicator').style.display = 'block'; // Show the message
+            startAlarm();
+        });
+
+        document.getElementById('turn-off-alarm').addEventListener('click', stopAlarm);
+
+        function startAlarm() {
+            if (alarmTime && alarmTime > new Date()) {
+                const timeUntilAlarm = alarmTime - new Date();
+                alarmInterval = setTimeout(() => {
+                    alarmPlaying = true;
+                    alarmSound.loop = true;
+                    alarmSound.play();
+                    document.getElementById('set-alarm').disabled = true;
+                    document.getElementById('turn-off-alarm').disabled = false;
+                }, timeUntilAlarm);
+            } else {
+                alert('Please set a valid future alarm time.');
+            }
+        }
+
+        function stopAlarm() {
+            if (alarmInterval) {
+                clearTimeout(alarmInterval);
+            }
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+            alarmPlaying = false;
+            document.getElementById('set-alarm').disabled = false;
+            document.getElementById('turn-off-alarm').disabled = true;
+            document.getElementById('alarm-indicator').textContent = ''; // Clear the message
+            document.getElementById('alarm-indicator').style.display = 'none'; // Hide the message
+        }
+    </script>
+</body>
+</html>
+
